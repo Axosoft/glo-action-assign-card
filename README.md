@@ -1,6 +1,6 @@
-# GitHub action to add an assignee to a Glo card
+# GitHub action to add an assignee to a Glo Boards card
 
-Use this action to add an assignee to a card on a Glo board.
+Use this action to add an assignee to a card on a [Glo Board](https://www.gitkraken.com/glo).
 The action requires the board ID, card ID, and assignee username as inputs.
 
 ## Requirements
