@@ -2,7 +2,7 @@ name: 'Glo Add Assignee To Card'
 description: 'GitHub Action to add an assignee to a card'
 branding:
   color: 'blue'
-  icon: 'tag'
+  icon: 'users'
 inputs:
   authToken:
     description: Auth token for user
