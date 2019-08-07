@@ -1,50 +1,64 @@
 import * as core from '@actions/core';
 import GloSDK from '@axosoft/glo-sdk';
 
+interface ICard {
+  boardId: string;
+  cardId: string;
+}
+
 async function run() {
   const authToken = core.getInput('authToken');
-  const boardID = core.getInput('boardID');
-  const cardID = core.getInput('cardID');
+  const cardsJson = core.getInput('cards');
   const username = core.getInput('assignee');
 
   try {
-    // find the board { id, labels }
-    const board = await GloSDK(authToken).boards.get(boardID, {
-      fields: ['members']
-    });
-    if (!board) {
-      core.setFailed(`Board ${boardID} not found`);
+    const cards = JSON.parse(cardsJson);
+    if (!cards) {
       return;
     }
-    core.debug(JSON.stringify(board));
 
-    // find the card { id, labels }
-    const card = await GloSDK(authToken).boards.cards.get(boardID, cardID, {
-      fields: ['assignees']
-    });
-    if (!card) {
-      core.setFailed(`Card ${cardID} not found`);
-      return;
-    }
-    core.debug(JSON.stringify(card));
+    for (let i = 0; i < cards.length; i++) {
+      const cardData = cards[i] as ICard;
+      const {boardId, cardId} = cardData;
 
-    // find member
-    if (board.members) {
-      const member = board.members.find(m => m.username === username);
-      if (member) {
-        core.debug(JSON.stringify(member));
+      // find the board { id, labels }
+      const board = await GloSDK(authToken).boards.get(boardId, {
+        fields: ['members']
+      });
+      if (!board) {
+        core.setFailed(`Board ${boardId} not found`);
+        return;
+      }
+      core.debug(JSON.stringify(board));
 
-        if (!card.assignees) {
-          card.assignees = [];
+      // find the card { id, labels }
+      const card = await GloSDK(authToken).boards.cards.get(boardId, cardId, {
+        fields: ['assignees']
+      });
+      if (!card) {
+        core.setFailed(`Card ${cardId} not found`);
+        return;
+      }
+      core.debug(JSON.stringify(card));
+
+      // find member
+      if (board.members) {
+        const member = board.members.find(m => m.username === username);
+        if (member) {
+          core.debug(JSON.stringify(member));
+
+          if (!card.assignees) {
+            card.assignees = [];
+          }
+
+          // add assignee to the card
+          card.assignees.push({
+            id: member.id as string
+          });
+
+          // update card
+          await GloSDK(authToken).boards.cards.edit(boardId, cardId, card);
         }
-
-        // add assignee to the card
-        card.assignees.push({
-          id: member.id as string
-        });
-
-        // update card
-        await GloSDK(authToken).boards.cards.edit(boardID, cardID, card);
       }
     }
   } catch (error) {
