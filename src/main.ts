@@ -29,7 +29,6 @@ async function run() {
         core.setFailed(`Board ${boardId} not found`);
         return;
       }
-      core.debug(JSON.stringify(board));
 
       // find the card { id, labels }
       const card = await GloSDK(authToken).boards.cards.get(boardId, cardId, {
@@ -39,14 +38,11 @@ async function run() {
         core.setFailed(`Card ${cardId} not found`);
         return;
       }
-      core.debug(JSON.stringify(card));
 
       // find member
       if (board.members) {
         const member = board.members.find(m => m.username === username);
         if (member) {
-          core.debug(JSON.stringify(member));
-
           if (!card.assignees) {
             card.assignees = [];
           }
